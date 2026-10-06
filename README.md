@@ -1,4 +1,4 @@
-# Prime ChainSentinel v0.7
+# Prime ChainSentinel
 
 Prime ChainSentinel es un producto de software orientado a conservar, clasificar y reutilizar evidencia computacional y probabilística mediante un contrato de procedencia. El sistema distingue evidencia observada de estimaciones, correcciones, simulaciones y cargas sustitutas, y conserva sus fuentes y relaciones de derivación.
 
