@@ -1,0 +1,43 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root { color-scheme: dark; }
+* { box-sizing: border-box; }
+body { margin: 0; background: #08090D; color: #e8e0d0; font-family: 'Share Tech Mono', monospace; }
+button, input, select { font-family: inherit; }
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:#08090D}
+::-webkit-scrollbar-thumb{background:#8B0000;border-radius:3px}
+
+.panel { @apply bg-prime-panel border border-white/10 rounded-xl shadow-xl; }
+.glass { background: linear-gradient(135deg, rgba(17,19,26,.95), rgba(8,9,13,.92)); border: 1px solid rgba(212,175,55,.18); }
+.metric { @apply panel p-4 border-t-2 border-t-prime-gold; }
+.metric-red { @apply panel p-4 border-t-2 border-t-prime-brightRed; }
+.metric-green { @apply panel p-4 border-t-2 border-t-prime-green; }
+.metric-amber { @apply panel p-4 border-t-2 border-t-prime-amber; }
+.label { @apply text-[10px] uppercase tracking-[.22em] text-white/40; }
+.value { @apply font-display text-2xl text-prime-gold font-bold; }
+.input { @apply bg-prime-panel2 border border-prime-gold/30 rounded-lg px-3 py-2 outline-none focus:border-prime-gold text-prime-gold; }
+.btn { @apply px-4 py-2 rounded-lg border border-prime-gold/70 bg-prime-gold/10 hover:bg-prime-gold/20 text-prime-gold uppercase tracking-[.18em] text-xs transition; }
+.btn-red { @apply px-4 py-2 rounded-lg border border-prime-brightRed/70 bg-prime-brightRed/10 hover:bg-prime-brightRed/20 text-prime-brightRed uppercase tracking-[.18em] text-xs transition; }
+.badge { @apply inline-flex items-center rounded-md border px-2 py-1 text-[10px] uppercase tracking-[.16em]; }
+.badge-measured { @apply border-prime-green/70 bg-prime-green/10 text-prime-green; }
+.badge-sim { @apply border-purple-400/70 bg-purple-500/10 text-purple-300; }
+.badge-surr { @apply border-prime-amber/70 bg-prime-amber/10 text-prime-amber; }
+.badge-red { @apply border-prime-brightRed/70 bg-prime-brightRed/10 text-prime-brightRed; }
+
+.grid-bg {
+  background-image: radial-gradient(rgba(212,175,55,.08) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+.scanlines:before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(0deg, transparent 0, transparent 2px, rgba(255,255,255,.025) 2px, rgba(255,255,255,.025) 3px);
+  z-index: 30;
+}

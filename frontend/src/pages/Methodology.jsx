@@ -1,0 +1,4 @@
+import SectionTitle from '../components/SectionTitle'
+export default function Methodology(){
+  return <div><SectionTitle title="Methodology" subtitle="Measured data, corrected estimates, simulated distributions."/><div className="panel max-w-4xl p-6 text-sm leading-8 text-white/55"><p><span className="text-prime-gold">Measured:</span> MI300X hardware profile, ROCm/PyTorch status, CPU hash baselines, GPU synthetic workload, Merkle timings, toy PoW timings.</p><p><span className="text-prime-amber">Corrected:</span> Merkle estimates that count leaf hashes + internal nodes and apply residual overhead factors.</p><p><span className="text-purple-300">Simulated:</span> blockchain workload estimates, offline PoW probability curves, market-risk Monte Carlo paths, percentile cones, and risk scores.</p><p><span className="text-prime-brightRed">Boundary:</span> no live trading, no real mining, no fake certainty.</p></div></div>
+}

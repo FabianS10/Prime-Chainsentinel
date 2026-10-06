@@ -1,0 +1,63 @@
+# --------------------------------------------------
+# Python
+# --------------------------------------------------
+.venv/
+backend/.venv/
+venv/
+env/
+
+__pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+.pytest_cache/
+.mypy_cache/
+
+# --------------------------------------------------
+# Environment variables
+# --------------------------------------------------
+.env
+**/.env
+!.env.example
+!**/.env.example
+
+# --------------------------------------------------
+# Node / React
+# --------------------------------------------------
+frontend/node_modules/
+frontend/dist/
+node_modules/
+dist/
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# --------------------------------------------------
+# Prime ChainSentinel runtime data
+# --------------------------------------------------
+backend/storage/evidence.db
+backend/storage/*.db
+backend/storage/*.sqlite
+backend/storage/*.sqlite3
+
+backend/storage/cache/
+backend/storage/imports/
+backend/storage/reports/
+backend/storage/uploads/
+
+# --------------------------------------------------
+# Temporary / generated files
+# --------------------------------------------------
+*.log
+*.tmp
+
+# --------------------------------------------------
+# IDE / OS
+# --------------------------------------------------
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
