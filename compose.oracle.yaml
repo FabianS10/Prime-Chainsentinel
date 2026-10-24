@@ -1,0 +1,39 @@
+name: prime-chainsentinel-oracle
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: prime-chainsentinel:defense
+    restart: unless-stopped
+    expose:
+      - "8000"
+    environment:
+      APP_ENV: production
+      MARKET_DATA_PROVIDER: yahoo
+      PCS_DB_PATH: /app/backend/storage/evidence.db
+      PCS_DEMO_USERNAME: ${PCS_DEMO_USERNAME:?Set PCS_DEMO_USERNAME in root .env}
+      PCS_DEMO_PASSWORD: ${PCS_DEMO_PASSWORD:?Set PCS_DEMO_PASSWORD in root .env}
+    volumes:
+      - pcs_storage:/app/backend/storage
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  tunnel:
+    # Temporary HTTPS hostname without buying a domain or exposing port 8000.
+    # For a stable public URL, replace this with a named Cloudflare Tunnel.
+    image: cloudflare/cloudflared:latest
+    command: tunnel --no-autoupdate --url http://app:8000
+    restart: unless-stopped
+    depends_on:
+      app:
+        condition: service_healthy
+
+volumes:
+  pcs_storage:
+    name: pcs-oracle-storage
