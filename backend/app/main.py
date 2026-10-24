@@ -24,14 +24,6 @@ async def lifespan(app: FastAPI):
 settings = get_settings()
 app = FastAPI(title=settings.app_name, version="0.7.0", lifespan=lifespan)
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=settings.cors_list,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
 
 @app.middleware("http")
 async def optional_demo_auth(request: Request, call_next):
@@ -66,6 +58,16 @@ async def optional_demo_auth(request: Request, call_next):
             )
     return await call_next(request)
 
+
+# Keep CORS outermost so cross-origin OPTIONS and 401 responses carry CORS headers.
+# This is necessary when the React client is hosted separately on Netlify.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.cors_list,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 app.include_router(baselines.router)
 app.include_router(blockchain.router)
