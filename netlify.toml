@@ -1,0 +1,13 @@
+# Netlify: build ONLY the static React/Vite frontend from this monorepo.
+# Set VITE_API_BASE in Netlify's environment variables to the HTTPS backend URL.
+# Example: https://your-backend.example.com (no trailing slash).
+[build]
+  base = "frontend"
+  command = "npm ci && npm run build"
+  publish = "dist"
+
+# React uses in-page navigation today; this fallback also supports future SPA paths.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
