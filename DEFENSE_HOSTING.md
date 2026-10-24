@@ -109,18 +109,67 @@ curl.exe http://localhost:8000/health
 
 ## 4. Cloud-hosted variant: Oracle Always Free
 
-Provision an Always Free **Ampere A1** VM (for example 2 OCPU/12 GB),
-subject to Oracle home-region quota and capacity. Install Docker Engine
-and Compose on the VM and deploy this same Docker image with the persisted
-volume. The A1 architecture is ARM64, so build the image *on the VM* rather
-than transferring a Windows/AMD64 build. Do not expose the unencrypted
-port 8000 to the internet. To publish a secure URL, use a configured
-HTTPS reverse proxy plus DNS, or Cloudflare Tunnel. Quick Tunnels may be
-used for temporary demos; a stable custom hostname requires additional
-DNS/tunnel configuration.
+Use this for an independent 24/7 cloud host if Oracle allocates an Always Free
+Ampere A1 instance. Current free allowance: 2 OCPUs / 12 GB RAM and eligible
+persistent boot/block storage in the account's home region. Oracle may reclaim
+an idle instance, and regional A1 capacity is not guaranteed.
 
-Keep an independently verified laptop-based fallback. Oracle can reclaim
-qualifying idle Always Free instances and regional capacity can be full.
+1. In https://cloud.oracle.com/, create an Always Free **VM.Standard.A1.Flex**
+   (Ubuntu ARM64, 2 OCPUs and 12 GB RAM, Always Free-eligible boot storage).
+   Save its private SSH key and public IP address. Never exceed Always Free
+   quotas. Only inbound SSH from your own IP is needed for setup; **do not
+   expose port 8000 or the SQLite file to the public Internet**.
+2. SSH into the VM (Ubuntu's default username is often `ubuntu`, but follow
+   the image's displayed connection details):
+
+   ```bash
+   ssh -i /path/to/oci-key ubuntu@YOUR_VM_PUBLIC_IP
+   ```
+
+3. Install Git and Docker Engine with Compose using the official Docker
+   Ubuntu instructions:
+   https://docs.docker.com/engine/install/ubuntu/
+   Confirm with `sudo docker compose version`.
+4. Clone this prepared branch:
+
+   ```bash
+   git clone --branch deploy/railway-single-service https://github.com/FabianS10/Prime-Chainsentinel.git
+   cd Prime-Chainsentinel
+   cp .env.defense.example .env
+   nano .env
+   ```
+
+   Set a strong private password and close the editor. The `.env` file is
+   gitignored; it must remain only on the VM.
+5. Start the FastAPI/React app and a Cloudflare Quick Tunnel **inside Docker**:
+
+   ```bash
+   sudo docker compose -f compose.oracle.yaml up -d --build
+   sudo docker compose -f compose.oracle.yaml ps
+   sudo docker compose -f compose.oracle.yaml logs tunnel --tail 80
+   ```
+
+   Find the `https://*.trycloudflare.com` link in the tunnel logs. Visit it
+   and log in with the credentials you set. This creates public HTTPS
+   **without** requiring a domain, opening port 8000 or keeping your laptop
+   switched on. The public URL is **temporary** and changes if the quick
+   tunnel is replaced; Cloudflare does not guarantee Quick Tunnel uptime.
+6. Import `sample_data/MI300X_Benchmarks.zip` into **Evidencia** through
+   your browser. Confirm that `sudo docker compose -f compose.oracle.yaml
+   restart app` does not delete imports.
+7. Perform the browser-based defense rehearsal and keep the separate
+   laptop-hosted option ready.
+
+For logs:
+```bash
+sudo docker compose -f compose.oracle.yaml logs --tail 100 app
+sudo docker compose -f compose.oracle.yaml logs --tail 100 tunnel
+```
+
+**Important:** If you need a stable custom hostname, replace the temporary
+Cloudflare Quick Tunnel with a named tunnel plus DNS/custom domain, and
+configure your access controls. Do not market this Quick Tunnel as guaranteed
+production hosting.
 
 ## 5. Defense-day checks
 
