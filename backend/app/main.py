@@ -26,15 +26,15 @@ app = FastAPI(title=settings.app_name, version="0.7.0", lifespan=lifespan)
 async def optional_demo_auth(request: Request, call_next):
     """Protect the public demo without modifying evidence ingestion or calculations.
 
-    Production requires explicit credentials. Local development can run without
-    authentication unless either credential environment variable is supplied.
+    Production and Render hosting require explicit credentials. Local development
+    can run without authentication unless a demo credential is supplied.
     """
     if request.url.path == "/health" or request.method == "OPTIONS":
         return await call_next(request)
 
     username = os.getenv("PCS_DEMO_USERNAME", "")
     password = os.getenv("PCS_DEMO_PASSWORD", "")
-    required = settings.app_env.lower() == "production" or bool(username or password)
+    required = settings.app_env.lower() == "production" or os.getenv("RENDER", "").lower() == "true" or bool(username or password)
     if not required:
         return await call_next(request)
     if not username or not password:
