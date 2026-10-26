@@ -10,6 +10,10 @@ backend/storage
 frontend/node_modules
 frontend/dist
 node_modules
-sample_data
+sample_data/*
+!sample_data/MI300X_Benchmarks.zip
 docs
 *.zip
+
+# Include the thesis demo's original evidence despite generic ZIP exclusion.
+!sample_data/MI300X_Benchmarks.zip
