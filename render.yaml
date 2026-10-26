@@ -1,0 +1,24 @@
+# Single free FastAPI service; frontend is independently deployed on Netlify.
+# Render Free storage is ephemeral, so PCS_DEMO_SEED_SAMPLE is an opt-in
+# restore of the original versioned thesis campaign when the DB is empty.
+services:
+  - type: web
+    name: prime-chainsentinel-api
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile.api
+    dockerContext: .
+    healthCheckPath: /health
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: MARKET_DATA_PROVIDER
+        value: yahoo
+      - key: PCS_DEMO_SEED_SAMPLE
+        value: "true"
+      - key: PCS_DEMO_USERNAME
+        sync: false
+      - key: PCS_DEMO_PASSWORD
+        sync: false
+      - key: CORS_ORIGINS
+        sync: false
