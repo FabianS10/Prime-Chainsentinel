@@ -26,10 +26,12 @@ def restore_demo_campaign_if_empty() -> None:
         media_type="application/zip",
         campaign="BUNDLED_THESIS_DEMO_SAMPLE",
     )
-    if result["status"] != "COMPLETED":
+    if result["status"] not in {"COMPLETED", "COMPLETED_WITH_ERRORS"} or not result.get("result_ids"):
         raise RuntimeError(
-            f"Bundled campaign could not be fully validated ({result['status']}): {result.get('errors')}"
+            f"Bundled campaign produced no usable results ({result['status']}): {result.get('errors')}"
         )
+    if result.get("errors"):
+        logger.warning("Demo ZIP was imported with validation errors: %s", result["errors"])
     logger.warning(
         "Restored thesis demo evidence from bundled original ZIP: import_id=%s sha256=%s",
         result["import_id"], result["sha256"]
