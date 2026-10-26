@@ -1,9 +1,24 @@
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8000'
+const API_BASE = (import.meta.env.VITE_API_BASE ?? '').replace(/\/$/, '')
+let demoAuthorization = ''
+
+// Credentials are kept in memory only, not in browser storage.
+export function setDemoCredentials(username, password) {
+  if (!username || !password) {
+    demoAuthorization = ''
+    return
+  }
+  const bytes = new TextEncoder().encode(`${username}:${password}`)
+  demoAuthorization = 'Basic ' + btoa(String.fromCharCode(...bytes))
+}
+
+function demoHeaders() {
+  return demoAuthorization ? { Authorization: demoAuthorization } : {}
+}
 
 async function request(path, options = {}) {
   const res = await fetch(`${API_BASE}${path}`, {
-    headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
     ...options,
+    headers: { 'Content-Type': 'application/json', ...(options.headers || {}), ...demoHeaders() },
   })
   if (!res.ok) {
     const text = await res.text()
@@ -37,13 +52,13 @@ export const api = {
     const form = new FormData()
     form.append('file', file)
     if (campaign) form.append('campaign', campaign)
-    const res = await fetch(`${API_BASE}/api/imports`, { method: 'POST', body: form })
+    const res = await fetch(`${API_BASE}/api/imports`, { method: 'POST', headers: demoHeaders(), body: form })
     if (!res.ok) throw new Error(await res.text())
     return res.json()
   },
   generateReport: async (payload) => {
     const res = await fetch(`${API_BASE}/api/reports/generate`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload),
+      method: 'POST', headers: { 'Content-Type': 'application/json', ...demoHeaders() }, body: JSON.stringify(payload),
     })
     if (!res.ok) throw new Error(await res.text())
     return res.blob()
