@@ -13,11 +13,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import get_settings
 from app.routers import baselines, blockchain, imports, market, portfolio, provenance, reports
 from app.services.evidence_store import init_database
+from app.services.demo_seed import restore_demo_campaign_if_empty
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     init_database()
+    restore_demo_campaign_if_empty()
     yield
 
 
