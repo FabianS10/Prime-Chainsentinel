@@ -57,6 +57,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--base", default="http://localhost:8000", help="Base URL, with no trailing slash")
     parser.add_argument("--market", action="store_true", help="Also test a real Yahoo Finance query")
+    parser.add_argument("--backend-only", action="store_true", help="Expect FastAPI JSON at / instead of a locally served React build")
     args = parser.parse_args()
     username, password = credentials()
     auth = "Basic " + base64.b64encode(f"{username}:{password}".encode()).decode()
@@ -64,7 +65,9 @@ def main():
     health = check(base, "/health", auth)
     if health.get("status") != "ok":
         raise RuntimeError(f"Health status not ok: {health!r}")
-    check(base, "/", auth, expect_json=False)
+    root = check(base, "/", auth, expect_json=args.backend_only)
+    if args.backend_only and root.get("app") != "Prime ChainSentinel":
+        raise RuntimeError("The root did not return the expected API identity")
     check(base, "/api/imports", auth)
     summary = check(base, "/api/baselines/summary", auth)
     check(base, "/api/provenance/summary", auth)
