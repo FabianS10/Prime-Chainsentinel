@@ -87,3 +87,30 @@ the instance sleeps, restarts or redeploys.
 
 The original evidence and data-processing logic remain unchanged. No
 sample results or Monte Carlo outputs are hardcoded in this deployment PR.
+
+
+## D. Explicit cross-origin CORS diagnostic
+
+After both domains are live and Render has the exact Netlify URL in
+`CORS_ORIGINS`, run this from a local clone of the deployment branch:
+
+```powershell
+python scripts/check_cors.py https://YOUR-ACTUAL-API.onrender.com https://YOUR-ACTUAL-SITE.netlify.app
+```
+
+This verifies the browser's preflight for authenticated GET, ZIP-upload POST
+and PDF-report POST, checks the unauthenticated 401 response carries the
+correct CORS headers, and confirms unapproved origins are not allowed.
+It **does not** require passwords or mutate the database.
+
+If OPTIONS reports HTTP 400 or the allow-origin header is missing, verify
+that Render `CORS_ORIGINS` is an exact match for the Netlify URL (scheme,
+host, no trailing slash), and that the new Render settings were deployed.
+An HTTP 401 *with* an allow-origin header means authentication is required,
+not that CORS failed.
+
+For a browser-level check: open the Netlify page, press F12, view Network,
+and filter `api`. Select an OPTIONS request and inspect response headers.
+Allowed origin should equal the Netlify site's URL, and authorization /
+content-type should be allowed. Successful CORS does not prove the
+Monte Carlo workload fits Render Free memory limits.
