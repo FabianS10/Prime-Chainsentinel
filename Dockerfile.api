@@ -9,6 +9,7 @@ COPY backend/requirements.txt ./requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY backend/app ./app
+COPY sample_data/MI300X_Benchmarks.zip ./demo_seed/MI300X_Benchmarks.zip
 RUN mkdir -p /app/backend/storage
 
 EXPOSE 8000
