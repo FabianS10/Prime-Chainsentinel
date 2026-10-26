@@ -114,3 +114,38 @@ and filter `api`. Select an OPTIONS request and inspect response headers.
 Allowed origin should equal the Netlify site's URL, and authorization /
 content-type should be allowed. Successful CORS does not prove the
 Monte Carlo workload fits Render Free memory limits.
+
+
+## E. First-deploy authentication verification (important)
+
+If `curl.exe -i https://YOUR-RENDER.onrender.com/api/baselines/summary`
+returns `200` without credentials, the demo API is publicly accessible;
+**do not upload sensitive or original evidence yet**. Check Render:
+
+1. Service **Settings** -> verify branch is `deploy/render-native-netlify`,
+   not `main`. PR #2 is not merged.
+2. Service **Environment** -> add `APP_ENV=production` and both
+   `PCS_DEMO_USERNAME` and `PCS_DEMO_PASSWORD` (no placeholder values).
+   The `render.yaml` variables are not automatically applied if you
+   created a Web Service manually instead of creating a Blueprint.
+3. Select **Save and deploy**, not **Save only**.
+4. In PowerShell, repeat:
+
+   ```powershell
+   curl.exe -i https://YOUR-RENDER.onrender.com/health
+   curl.exe -i https://YOUR-RENDER.onrender.com/api/baselines/summary
+   curl.exe -i -u defense https://YOUR-RENDER.onrender.com/api/baselines/summary
+   ```
+
+   Replace `defense` with your actual username. Curl prompts for the
+   password rather than embedding it in shell history. Expected HTTP
+   statuses are `200`, `401`, `200`. When the database has no
+   imports, the final JSON may legitimately return
+   `{"available":false,"reason":"NO_IMPORTED_CAMPAIGN",...}`.
+
+**Defense-in-depth:** a Render instance now also requires credentials
+whenever Render's built-in `RENDER=true` environment variable is present,
+even if `APP_ENV` was omitted. If authentication is enabled but either
+credential is missing, protected endpoints return `503` instead of
+being silently opened to the public. This does not protect a service
+accidentally deployed from the original unmodified main branch.
