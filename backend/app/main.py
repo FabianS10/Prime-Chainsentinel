@@ -1,11 +1,6 @@
-import base64
-import binascii
 from contextlib import asynccontextmanager
-from hmac import compare_digest
-import os
 
-from fastapi import FastAPI, Request
-from fastapi.responses import Response
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import get_settings
@@ -22,46 +17,6 @@ async def lifespan(app: FastAPI):
 settings = get_settings()
 app = FastAPI(title=settings.app_name, version="0.7.0", lifespan=lifespan)
 
-@app.middleware("http")
-async def optional_demo_auth(request: Request, call_next):
-    """Protect the public demo without modifying evidence ingestion or calculations.
-
-    Production and Render hosting require explicit credentials. Local development
-    can run without authentication unless a demo credential is supplied.
-    """
-    if request.url.path == "/health" or request.method == "OPTIONS":
-        return await call_next(request)
-
-    username = os.getenv("PCS_DEMO_USERNAME", "")
-    password = os.getenv("PCS_DEMO_PASSWORD", "")
-    required = settings.app_env.lower() == "production" or os.getenv("RENDER", "").lower() == "true" or bool(username or password)
-    if not required:
-        return await call_next(request)
-    if not username or not password:
-        return Response("Demo credentials are not configured", status_code=503)
-
-    supplied_user = supplied_password = ""
-    try:
-        scheme, encoded = request.headers.get("authorization", "").split(" ", 1)
-        if scheme.lower() == "basic":
-            decoded = base64.b64decode(encoded, validate=True).decode("utf-8")
-            supplied_user, supplied_password = decoded.split(":", 1)
-    except (ValueError, UnicodeError, binascii.Error):
-        pass
-
-    if not (
-        compare_digest(supplied_user, username)
-        and compare_digest(supplied_password, password)
-    ):
-        return Response(
-            "Authentication required",
-            status_code=401,
-            headers={"WWW-Authenticate": 'Basic realm="Prime ChainSentinel"'},
-        )
-    return await call_next(request)
-
-
-# Keep CORS outermost so preflight/401 replies include CORS headers.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_list,
