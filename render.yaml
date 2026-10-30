@@ -15,9 +15,5 @@ services:
         value: production
       - key: MARKET_DATA_PROVIDER
         value: yahoo
-      - key: PCS_DEMO_USERNAME
-        sync: false
-      - key: PCS_DEMO_PASSWORD
-        sync: false
       - key: CORS_ORIGINS
         sync: false
