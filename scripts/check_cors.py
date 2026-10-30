@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check browser CORS and authentication behavior on a live Render backend.
+"""Check browser CORS behavior on a live Render backend.
 
 Usage:
   python scripts/check_cors.py https://YOUR-API.onrender.com https://YOUR-SITE.netlify.app
@@ -37,7 +37,7 @@ def check_preflight(api, frontend, path, intended_method):
         {
             "Origin": frontend,
             "Access-Control-Request-Method": intended_method,
-            "Access-Control-Request-Headers": "authorization,content-type",
+            "Access-Control-Request-Headers": "content-type",
         },
     )
     allowed_origin = headers.get("Access-Control-Allow-Origin")
@@ -47,7 +47,6 @@ def check_preflight(api, frontend, path, intended_method):
         code == 200
         and allowed_origin == frontend
         and intended_method in allowed_methods
-        and "authorization" in allowed_headers
         and "content-type" in allowed_headers
     )
     print(f"{'PASS' if valid else 'FAIL'} OPTIONS {path}: HTTP {code}")
@@ -69,10 +68,8 @@ def main():
     ]
     code, headers = fetch(api, "/api/baselines/summary", "GET", {"Origin": frontend})
     allowed = headers.get("Access-Control-Allow-Origin")
-    ok = code == 401 and allowed == frontend
-    print(f"{'PASS' if ok else 'FAIL'} unauthenticated GET /api/baselines/summary: HTTP {code}; allow-origin={allowed!r}")
-    if code == 200:
-        print("WARNING: the API may be publicly readable without demo authentication.")
+    ok = code == 200 and allowed == frontend
+    print(f"{'PASS' if ok else 'FAIL'} public GET /api/baselines/summary: HTTP {code}; allow-origin={allowed!r}")
     checks.append(ok)
 
     # Confirm that the API does not allow a non-configured site.
@@ -85,7 +82,7 @@ def main():
     print(f"{'PASS' if blocked else 'FAIL'} unapproved origin rejected: HTTP {code}")
     checks.append(blocked)
     if all(checks):
-        print("All CORS/anonymous-auth checks passed. Verify login, uploads, calculations and PDF in Netlify next.")
+        print("All CORS checks passed. Verify dashboard, uploads, calculations and PDF in Netlify next.")
         return 0
     print("One or more checks failed. Compare Render's CORS_ORIGINS to the actual Netlify URL, then redeploy Render.")
     return 1
