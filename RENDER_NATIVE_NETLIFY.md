@@ -28,14 +28,12 @@ engines, data ingestion, provenance contract, or historical evidence files.
    PYTHON_VERSION=3.11.11
    APP_ENV=production
    MARKET_DATA_PROVIDER=yahoo
-   PCS_DEMO_USERNAME=<your-username>
-   PCS_DEMO_PASSWORD=<unique-private-password>
    CORS_ORIGINS=https://YOUR-SITE.netlify.app
    ```
 
    Use actual values. Configure the Netlify hostname in `CORS_ORIGINS`
-   once assigned. Keep the credentials exclusively in Render settings.
-   Production mode refuses protected requests if either credential is missing.
+   once assigned. This demo runs without built-in authentication.
+   Avoid importing confidential files: the public API can be called directly.
 4. Deploy, then confirm `https://YOUR-SERVICE.onrender.com/health`
    responds with a JSON status of `ok`.
 
@@ -61,8 +59,8 @@ the instance sleeps, restarts or redeploys.
 4. Deploy Netlify and update Render's `CORS_ORIGINS` to the exact
    resulting `https://YOUR-SITE.netlify.app` URL. Redeploy/restart Render
    for the environment-variable change to take effect.
-5. Open Netlify, log in with the shared demo credentials, and verify API
-   requests, ZIP uploads, and PDF downloads.
+5. Open Netlify directly (no login) and verify API requests, ZIP uploads,
+   computations, and PDF downloads.
 
 ## C. Evidence-driven defense rehearsal
 
@@ -89,63 +87,31 @@ The original evidence and data-processing logic remain unchanged. No
 sample results or Monte Carlo outputs are hardcoded in this deployment PR.
 
 
-## D. Explicit cross-origin CORS diagnostic
+## D. Verify CORS for the login-free deployment
 
-After both domains are live and Render has the exact Netlify URL in
-`CORS_ORIGINS`, run this from a local clone of the deployment branch:
+After both domains are live, set
+`CORS_ORIGINS=https://prime-chainsentinel.netlify.app`
+in Render, then use the read-only check:
 
 ```powershell
-python scripts/check_cors.py https://YOUR-ACTUAL-API.onrender.com https://YOUR-ACTUAL-SITE.netlify.app
+python scripts/check_cors.py https://prime-chainsentinel-api.onrender.com https://prime-chainsentinel.netlify.app
 ```
 
-This verifies the browser's preflight for authenticated GET, ZIP-upload POST
-and PDF-report POST, checks the unauthenticated 401 response carries the
-correct CORS headers, and confirms unapproved origins are not allowed.
-It **does not** require passwords or mutate the database.
+The test checks JSON requests, the upload/report preflight, the allowed
+Netlify origin and expected public `200` responses. It does not upload
+data or perform calculations. A successful response from the API does not
+guarantee that Monte Carlo fits Render Free compute/memory constraints.
 
-If OPTIONS reports HTTP 400 or the allow-origin header is missing, verify
-that Render `CORS_ORIGINS` is an exact match for the Netlify URL (scheme,
-host, no trailing slash), and that the new Render settings were deployed.
-An HTTP 401 *with* an allow-origin header means authentication is required,
-not that CORS failed.
+## E. Security of this public demonstration
 
-For a browser-level check: open the Netlify page, press F12, view Network,
-and filter `api`. Select an OPTIONS request and inspect response headers.
-Allowed origin should equal the Netlify site's URL, and authorization /
-content-type should be allowed. Successful CORS does not prove the
-Monte Carlo workload fits Render Free memory limits.
+This edition intentionally opens directly to the dashboard, with no login.
+The API is also public: CORS restricts **which browser origins** can read
+responses, but is not an authentication or access-control system. Anyone
+can send requests directly to the Render URL, including import and
+simulation requests. Never upload private, confidential or sensitive data.
+For a future long-lived public deployment, add infrastructure-managed
+access restrictions or a real authorization system without changing the
+thesis prototype's research requirements.
 
-
-## E. First-deploy authentication verification (important)
-
-If `curl.exe -i https://YOUR-RENDER.onrender.com/api/baselines/summary`
-returns `200` without credentials, the demo API is publicly accessible;
-**do not upload sensitive or original evidence yet**. Check Render:
-
-1. Service **Settings** -> verify branch is `deploy/render-native-netlify`,
-   not `main`. PR #2 is not merged.
-2. Service **Environment** -> add `APP_ENV=production` and both
-   `PCS_DEMO_USERNAME` and `PCS_DEMO_PASSWORD` (no placeholder values).
-   The `render.yaml` variables are not automatically applied if you
-   created a Web Service manually instead of creating a Blueprint.
-3. Select **Save and deploy**, not **Save only**.
-4. In PowerShell, repeat:
-
-   ```powershell
-   curl.exe -i https://YOUR-RENDER.onrender.com/health
-   curl.exe -i https://YOUR-RENDER.onrender.com/api/baselines/summary
-   curl.exe -i -u defense https://YOUR-RENDER.onrender.com/api/baselines/summary
-   ```
-
-   Replace `defense` with your actual username. Curl prompts for the
-   password rather than embedding it in shell history. Expected HTTP
-   statuses are `200`, `401`, `200`. When the database has no
-   imports, the final JSON may legitimately return
-   `{"available":false,"reason":"NO_IMPORTED_CAMPAIGN",...}`.
-
-**Defense-in-depth:** a Render instance now also requires credentials
-whenever Render's built-in `RENDER=true` environment variable is present,
-even if `APP_ENV` was omitted. If authentication is enabled but either
-credential is missing, protected endpoints return `503` instead of
-being silently opened to the public. This does not protect a service
-accidentally deployed from the original unmodified main branch.
+The original simulation algorithms, ingestion rules, provenance contract,
+and manual evidence import behavior remain unchanged.
