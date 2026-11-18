@@ -1,0 +1,30 @@
+name: Pruebas de Prime ChainSentinel
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  pruebas:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Instalar dependencias
+        run: python -m pip install -r backend/requirements.txt pytest==9.2.0 pytest-cov==7.1.0 httpx==0.28.1
+      - name: Evaluar backend
+        working-directory: backend
+        run: python -m pytest -v tests --cov=app --cov-report=term --junitxml=casos.xml
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pruebas-backend
+          path: backend/casos.xml
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Construir frontend
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run build
