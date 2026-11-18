@@ -29,17 +29,17 @@ def result_detail(result_id: str):
     return result
 
 
-@router.get("/artifacts/{artifact_id:path}")
-def artifact_detail(artifact_id: str):
-    artifact = get_artifact(artifact_id)
-    if not artifact:
-        raise HTTPException(status_code=404, detail="Artifact not found")
-    return artifact
-
-
 @router.get("/artifacts/{artifact_id:path}/verify")
 def artifact_verify(artifact_id: str):
     try:
         return verify_artifact(artifact_id)
     except KeyError as exc:
         raise HTTPException(status_code=404, detail="Artifact not found") from exc
+
+
+@router.get("/artifacts/{artifact_id:path}")
+def artifact_detail(artifact_id: str):
+    artifact = get_artifact(artifact_id)
+    if not artifact:
+        raise HTTPException(status_code=404, detail="Artifact not found")
+    return artifact
